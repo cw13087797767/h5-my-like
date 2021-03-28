@@ -60,7 +60,7 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
-import { registerUser } from '@/api/userApi'
+import { userRegister } from '@/api/userApi'
 @Component
 export default class registerComponent extends Vue{
     private username:string = ""
@@ -100,7 +100,7 @@ export default class registerComponent extends Vue{
             invitation:this.Invitation,
             userImg:null
         }
-        registerUser(params).then((res:any) => {
+        userRegister(params).then((res:any) => {
             if (res && res.code === '0') {
                 this.$toast('注册成功！')
                 setTimeout(() => {

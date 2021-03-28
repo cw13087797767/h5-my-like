@@ -28,6 +28,7 @@
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
 import {Mutation } from 'vuex-class';
+import { userLogin } from '@/api/userApi'
 @Component
 export default class loginComponent extends Vue {
     @Mutation('set_globalLoading') set_globalLoading:any
@@ -51,10 +52,25 @@ export default class loginComponent extends Vue {
     login(){
         if (this.userNum && this.userPwd) {
             this.set_globalLoading(true)
-            setTimeout(() => {
-            this.set_globalLoading(false)
-                this.$router.push('/home/main')
-            }, 1500);
+            const params = {
+                userAccount: this.userNum,
+                password: this.userPwd
+            }
+            userLogin(params).then((res:any) => {
+                if (res.code === '0') {
+                    this.$toast("登陆成功！")
+                    window.localStorage.setItem('userConfig',JSON.stringify(res.data || {}))
+                    setTimeout(() => {
+                        this.$router.replace(`/home/main`)
+                    }, 500);
+                } else {
+                    this.$toast(res.msg || '登陆失败，请稍后再试！')
+                }
+                this.set_globalLoading(false)
+            }).catch(err => {
+                this.$toast(err.msg || '登陆失败，请稍后再试！')
+                this.set_globalLoading(false)
+            })
         }
     }
 }
