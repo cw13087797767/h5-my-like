@@ -32,8 +32,8 @@
                 required
                 @blur="testInput('name')"
                 :error-message="errorMessage.name"
-                label="姓名"
-                placeholder="请输入姓名"/>
+                label="昵称"
+                placeholder="请输入昵称"/>
             <van-field
                 v-model="phone"
                 required
@@ -51,7 +51,6 @@
                 placeholder="请输入邮箱"/>
             <van-field
                 v-model="Invitation"
-                required
                 label="邀请码"
                 placeholder="请输入邀请码（选填）"/>
             <van-button type="info" size="large" @click="register">马上注册</van-button>
@@ -61,6 +60,7 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
+import { registerUser } from '@/api/userApi'
 @Component
 export default class registerComponent extends Vue{
     private username:string = ""
@@ -91,10 +91,27 @@ export default class registerComponent extends Vue{
         if (!this.testInput('email')) {
             return
         }
-        this.$toast('注册成功')
-        setTimeout(() => {
-            this.$router.go(-1)
-        }, 1000);
+        const params = {
+            userAccount:this.username,
+            password:this.userpwd,
+            userName:this.name,
+            phone:this.phone,
+            email:this.email,
+            invitation:this.Invitation,
+            userImg:null
+        }
+        registerUser(params).then((res:any) => {
+            if (res && res.code === '0') {
+                this.$toast('注册成功！')
+                setTimeout(() => {
+                    this.$router.go(-1)
+                }, 500);
+            } else {
+                this.$toast(res.msg || '注册成功！')
+            }
+        }).catch(err => {
+            this.$toast('注册失败，请稍后再试！')
+        })
     }
 
     testInput(text:any){

@@ -17,5 +17,5 @@ function getGridChartData(time:any){
 
 export default {
     getResourceData,
-    getGridChartData
+    getGridChartData,
 }

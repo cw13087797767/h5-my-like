@@ -4,9 +4,9 @@ export default class Http {
     axiosHttpGet(url: any) {
         return new Promise((resolve: any, reject: any) => {
             axios.get(url).then((res: any) => {
-                resolve(res)
+                resolve(res.data)
             }).catch((err: any) => {
-                resolve(err)
+                reject(err)
             })
         })
     }
@@ -14,9 +14,9 @@ export default class Http {
     axiosHttpPost(url: any, params: any) {
         return new Promise((resolve: any, reject: any) => {
             axios.post(url, params).then((res: any) => {
-                resolve(res)
+                resolve(res.data)
             }).catch((err: any) => {
-                resolve(err)
+                reject(err)
             })
         })
     }

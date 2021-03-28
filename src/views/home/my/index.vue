@@ -9,6 +9,7 @@
 <script lang="ts">
 import {Vue,Component} from 'vue-property-decorator';
 import { State,Mutation } from 'vuex-class';
+import homeApi from '@/api/homeApi'
 
 @Component
 export default class MyComponent extends Vue {
