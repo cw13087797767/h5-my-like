@@ -13,6 +13,7 @@
     "@types/openlayers": "^4.6.17",
     "axios": "^0.19.1",
     "core-js": "^3.4.4",
+    "dayjs": "^1.10.4",
     "mockjs": "^1.1.0",
     "openlayers": "^4.6.5",
     "vant": "^2.4.3",

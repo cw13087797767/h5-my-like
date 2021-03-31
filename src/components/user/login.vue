@@ -59,6 +59,7 @@ export default class loginComponent extends Vue {
             userLogin(params).then((res:any) => {
                 if (res.code === '0') {
                     this.$toast("登陆成功！")
+                    res.data.loginTime = new Date().valueOf()
                     window.localStorage.setItem('userConfig',JSON.stringify(res.data || {}))
                     setTimeout(() => {
                         this.$router.replace(`/home/main`)

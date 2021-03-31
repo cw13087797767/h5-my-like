@@ -3,7 +3,15 @@ import VueRouter from 'vue-router';
 import vappRoutes from './vapp'
 import homeRoutes from './home'
 import userRoutes from './user'
+import dayjs from 'dayjs'
+
 Vue.use(VueRouter);
+const userConfig:any = window.localStorage.getItem('userConfig')
+const isTimeOut = () => {
+  const flag = !!userConfig && dayjs().subtract(5,'second') < dayjs(JSON.parse(userConfig).loginTime)
+  flag && window.localStorage.removeItem("userConfig")
+  return flag
+}
 
 const routes = [
   ...vappRoutes,
@@ -12,7 +20,7 @@ const routes = [
   {
     path:'/',
     name:'main',
-    redirect:'/user/login'
+    redirect: !!userConfig ? `/home` : '/user/login'
   }
 ];
 

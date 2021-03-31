@@ -11,3 +11,11 @@ export function Compress(img:any,height:number,width:number,callback:Function) {
     context.drawImage(img,0,0,width,height)
     callback(canvas.toDataURL("image/jpeg", 0.75))
 }
+
+/**
+ * 退出登录
+ */
+export const loginOut = () => {
+    window.localStorage.removeItem('userConfig')
+    window.location.replace('/')
+}
