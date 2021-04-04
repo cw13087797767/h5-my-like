@@ -6,22 +6,56 @@
         />
         <div class="top">
             <div class="top-center">
-                <div class="img-ctn">
-                    <img :src="require(`@/assets/yu_tou.png`)" alt="" srcset="">
+                <div class="img-ctn" @click="handleAlert(true)">
+                    <img :src="userDetail.userImg || require(`@/assets/yu_tou.png`)" alt="" srcset="">
                 </div>
-                <p class="lv">LV:<span>66</span></p>
+                <p class="lv">LV:<span>{{ userDetail.gradePoint }}</span></p>
             </div>
             <div class="top-footer"></div>
             <div class="username">
-                <span>吴彦祖</span>
+                <span>{{userDetail.userName}}</span>
             </div>
         </div>
         <div class="mid">
             <p>修改信息</p>
             <p @click="showLogOut">退出登录</p>
         </div>
-        <!-- <input type="button" value="显示弹窗" @click="handleAlert(true)">
-        <div class="alert" v-if="alertFlag"  @click="handleAlert(false)"></div> -->
+        <van-popup v-model="alertFlag" position="bottom" @click-overlay="handleAlert(false)">
+            <div class="showBottom">
+                <p class="input-ctn">
+                    <span>拍照</span>
+                    <input type="file" accept="image/*" mutiple capture="camera" @change="selectFile">
+                </p>
+                <p class="input-ctn">
+                    <span>图库选择</span>
+                    <input type="file" accept="image/*" mutiple @change="selectFile">
+                </p>
+                <p @click="handleAlert(false)">取消</p>
+            </div>
+        </van-popup>
+        <van-popup v-model="showImgFlag"  position="right" :style="{ height: '100%', width: '100%' }">
+            <div class="fullModal">
+                <div class="showImg">
+                    <img :src="showImg" alt="" srcset="">
+                </div>
+                <div class="chooseCtn">
+                    <van-icon 
+                        name="cross" 
+                        color="#e4a2a2"
+                        size="30"
+                        style="padding: 5px;border-radius: 50%;border: 1px solid #e4a2a2;color: #e4a2a2;" 
+                        @click="showImgFlag = false"
+                    />
+                    <van-icon 
+                        name="success" 
+                        color="#1fce35"
+                        size="30"
+                        style="padding: 5px;border-radius: 50%;border: 1px solid #1fce35;color: #1fce35;" 
+                        @click="uploadImg"
+                    />
+                </div>
+            </div>
+        </van-popup>
     </div>
 </template>
 
@@ -29,25 +63,88 @@
 import {Vue,Component} from 'vue-property-decorator';
 import { State,Mutation } from 'vuex-class';
 import { loginOut } from '@/util/util'
-import homeApi from '@/api/homeApi'
+import { updateUserImg, userLogin, getUserDetailById } from '@/api/userApi'
 import { Dialog } from 'vant'
+import { Compress } from '@/util/util'
 
 @Component
 export default class MyComponent extends Vue {
     @State('headerModule') headerModule:any
     @Mutation('set_headerText') set_headerText:any;
 
+    private userDetail:any = {}
     private alertFlag:boolean = false
+    private isLoading:boolean = false
+    private showImgFlag:boolean = false
+    private showImg:any = null
+    private file:any = null
+
     activated() {
         this.set_headerText('我的')
+        this.getUserDetail()
     }
+
     
     mounted(){
         window.onhashchange = () =>{
             if (this.alertFlag) {
-                 this.handleAlert(false)
+                this.handleAlert(false)
             }
         }
+    }
+
+    getUserDetail(){
+        const userConfig:any = window.localStorage.getItem('userConfig')
+        if (userConfig) {
+            getUserDetailById({}).then((res:any) => {
+                if (res && res.code === '0') {
+                    this.userDetail = res.data || {}
+                } else {
+                    this.$toast(res.msg || '获取用户信息失败')
+                }
+            }).catch(err => {
+                this.$toast(err || '获取用户信息失败')
+            })
+        }
+    }
+
+    selectFile(event:any){
+        if (event.target.files && event.target.files.length > 0) {
+            this.isLoading = true
+            let file:any = event.target.files[0]
+            this.file = file
+            let fr:any = new FileReader()
+            fr.readAsDataURL(file)
+            fr.onload = (imgObj:any) => {
+                let img:any = new Image()
+                img.src = imgObj.target.result
+                img.onload = (e:any) => {
+                    Compress(img,e.path[0].height,e.path[0].width,(newImg:any) => {
+                        this.showImg = newImg
+                        this.showImgFlag = true
+                        this.isLoading = false
+                    })
+                }
+            }
+        }
+    }
+
+    uploadImg(){
+        const form = new FormData()
+        form.append('file',this.file)
+        updateUserImg(form).then((res:any) => {
+            console.log(res)
+            if (res && res.code === '0') {
+                this.$toast("更新头像成功!")
+                this.getUserDetail()
+                this.handleAlert(false)
+                this.showImg = null
+                this.showImgFlag = false
+                this.file = null
+            } else {
+                this.$toast(res.message || "更新头像成功!")
+            }
+        })
     }
 
     showLogOut(){
@@ -106,7 +203,7 @@ export default class MyComponent extends Vue {
                 img{
                     width: 100%;
                     border-radius: 50%;
-                    height: auto;
+                    height: 100%;
                 }
             }
             .lv{
@@ -153,6 +250,60 @@ export default class MyComponent extends Vue {
             border-top: solid 1px #f7f6f6;
             padding-left: 50px;
         }
+    }
+}
+.showBottom{
+    width: 100%;
+    text-align: center;
+    line-height: 40px;
+    overflow: hidden;
+    p{
+        text-align: center;
+        border-bottom: solid 1px #f7f6f6;
+    }
+    .input-ctn{
+        position: relative;
+        input{
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            opacity: 0;
+            z-index: 2;
+            left: 0;
+            top: 0;
+        }
+    }
+}
+.fullModal{
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    .showImg{
+        width: 40%;
+        margin-top: 30%;
+        position: relative;
+        padding-bottom: 40%;
+        img{
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            border-radius: 50%;
+        }
+    }
+    .chooseCtn{
+        position: absolute;
+        bottom: 10%;
+        width: 50%;
+        left: 50%;
+        transform: translate(-50%, 0);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 }
 </style>
