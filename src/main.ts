@@ -18,6 +18,7 @@ import {
   Loading,
   DatetimePicker,
   List,
+  Toast,
 } from 'vant';
 import 'vant/lib/index.css';
 import './common/base.css';
@@ -35,17 +36,20 @@ Vue.use(Circle);
 Vue.use(Loading);
 Vue.use(DatetimePicker);
 Vue.use(List);
+Vue.use(Toast);
 Vue.use(Lazyload, {
   lazyComponent: true
 });
 Vue.config.productionTip = false;
 
-import "./mock/home-mock"
+// import "./mock/home-mock"
 import Vconsole from 'vconsole';
 if (window.location.href.indexOf('localhost') == -1) {
   let vConsole: any = new Vconsole();
   Vue.use(vConsole);
 }
+
+// Vue.use((window as any)['vue-cropper'].default)
 
 new Vue({
   router,

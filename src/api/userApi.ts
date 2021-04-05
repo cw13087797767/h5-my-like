@@ -21,3 +21,8 @@ export const updateUserImg = (params:any) => {
 export const getUserDetailById = (params: any) => {
     return http.axiosHttpPost(`/mylike/api/user/userDetail`, params)
 }
+
+// 修改用户信息
+export const updateUserInfo = (params: any) => {
+    return http.axiosHttpPost(`/mylike/api/user/update`, params)
+}

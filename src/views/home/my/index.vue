@@ -6,7 +6,7 @@
         />
         <div class="top">
             <div class="top-center">
-                <div class="img-ctn" @click="handleAlert(true)">
+                <div class="img-ctn" @click="toUploadImg">
                     <img :src="userDetail.userImg || require(`@/assets/yu_tou.png`)" alt="" srcset="">
                 </div>
                 <p class="lv">LV:<span>{{ userDetail.gradePoint }}</span></p>
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="mid">
-            <p>修改信息</p>
+            <p @click="toUpdate">修改信息</p>
             <p @click="showLogOut">退出登录</p>
         </div>
         <van-popup v-model="alertFlag" position="bottom" @click-overlay="handleAlert(false)">
@@ -35,8 +35,14 @@
         </van-popup>
         <van-popup v-model="showImgFlag"  position="right" :style="{ height: '100%', width: '100%' }">
             <div class="fullModal">
-                <div class="showImg">
-                    <img :src="showImg" alt="" srcset="">
+                <div @click="handleAlert(true)" class="showImg">
+                    <!-- <vueCropper
+                        ref="cropper"
+                        :img="showImg"
+                        :outputSize="1"
+                        outputType="jpg"
+                    ></vueCropper> -->
+                    <img :src="showImg" alt="">
                 </div>
                 <div class="chooseCtn">
                     <van-icon 
@@ -76,7 +82,7 @@ export default class MyComponent extends Vue {
     private alertFlag:boolean = false
     private isLoading:boolean = false
     private showImgFlag:boolean = false
-    private showImg:any = null
+    private showImg:any = ''
     private file:any = null
 
     activated() {
@@ -84,13 +90,22 @@ export default class MyComponent extends Vue {
         this.getUserDetail()
     }
 
-    
     mounted(){
         window.onhashchange = () =>{
             if (this.alertFlag) {
                 this.handleAlert(false)
             }
         }
+    }
+
+    toUpdate(){
+        this.$router.push(`/user/updateUser?userId=${this.userDetail.userId}`)
+    }
+
+    toUploadImg(){
+        this.showImgFlag = true
+        this.showImg = this.userDetail.userImg
+        this.file = null
     }
 
     getUserDetail(){
@@ -109,6 +124,7 @@ export default class MyComponent extends Vue {
     }
 
     selectFile(event:any){
+        this.handleAlert(false)
         if (event.target.files && event.target.files.length > 0) {
             this.isLoading = true
             let file:any = event.target.files[0]
@@ -121,7 +137,6 @@ export default class MyComponent extends Vue {
                 img.onload = (e:any) => {
                     Compress(img,e.path[0].height,e.path[0].width,(newImg:any) => {
                         this.showImg = newImg
-                        this.showImgFlag = true
                         this.isLoading = false
                     })
                 }
@@ -130,19 +145,24 @@ export default class MyComponent extends Vue {
     }
 
     uploadImg(){
+        if (!this.file) {
+            this.showImgFlag = false
+            this.showImg = null
+            return
+        }
         const form = new FormData()
         form.append('file',this.file)
         updateUserImg(form).then((res:any) => {
             console.log(res)
             if (res && res.code === '0') {
                 this.$toast("更新头像成功!")
+                this.showImgFlag = false
                 this.getUserDetail()
                 this.handleAlert(false)
                 this.showImg = null
-                this.showImgFlag = false
                 this.file = null
             } else {
-                this.$toast(res.message || "更新头像成功!")
+                this.$toast(res.message || "更新头像失败!")
             }
         })
     }
@@ -305,5 +325,8 @@ export default class MyComponent extends Vue {
         justify-content: space-between;
         align-items: center;
     }
+}
+/deep/ .van-hairline--bottom::after{
+  border-bottom: none !important;
 }
 </style>

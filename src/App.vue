@@ -58,5 +58,4 @@ export default class App extends Vue {
       color: #fff;
   }
 }
-
 </style>

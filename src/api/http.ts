@@ -3,7 +3,6 @@ import axios from 'axios'
 export default class Http {
     constructor(){
         axios.interceptors.request.use((config:any):any => {
-            console.log(config)
             const userConfig = window.localStorage.getItem('userConfig')
             const unCheckUrlList:Array<any> = ['/mylike/api/user/login', '/mylike/api/user/register']
             if (unCheckUrlList.includes(config.url)) return config
