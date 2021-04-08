@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import vappRoutes from './vapp'
+import baseAppRoutes from './baseApp'
 import homeRoutes from './home'
 import userRoutes from './user'
 import dayjs from 'dayjs'
@@ -14,7 +14,7 @@ const isTimeOut = () => {
 }
 
 const routes = [
-  ...vappRoutes,
+  ...baseAppRoutes,
   ...homeRoutes,
   ...userRoutes,
   {

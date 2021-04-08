@@ -22,39 +22,28 @@ const icon1 = require('@/assets/icon/icon1.png')
 const icon2 = require('@/assets/icon/icon2.png')
 const icon3 = require('@/assets/icon/icon3.png')
 const uploadImg = require('@/assets/icon/uploadImg.png')
+const spaceImg = require('@/assets/icon/space.png')
 @Component
 export default class HomeMainMiddleComponent extends Vue {
     private workList:Array<any> = []
 
     created() {
         this.workList = [
-        // {
-        //     img:icon1,
-        //     id:1,
-        //     label:"应用1"
-        // },{
-        //     img:icon2,
-        //     id:2,
-        //     label:"应用2"
-        // },{
-        //     img:icon3,
-        //     id:3,
-        //     label:"应用3"
-        // }
-        {
-            img:uploadImg,
-            id:4,
-            label:'图片上传',
-            routeName:'vappUploadImg'
-        }
+            {
+                img:spaceImg,
+                label:'我的空间',
+                routeName:'baseAppSpaceMySpace'
+            },
+            {
+                img:uploadImg,
+                label:'图片上传',
+                routeName:'baseAppUploadImg'
+            },
         ]
     }
     toWork(obj:any){
         this.$router.push({
             name:obj.routeName,
-            query:{
-                id:obj.id
-            }
         })
     }
 }
