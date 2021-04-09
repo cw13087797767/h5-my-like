@@ -49,6 +49,8 @@ if (window.location.href.indexOf('localhost') == -1) {
   Vue.use(vConsole);
 }
 
+
+
 // Vue.use((window as any)['vue-cropper'].default)
 
 new Vue({
