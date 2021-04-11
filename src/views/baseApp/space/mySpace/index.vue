@@ -31,21 +31,21 @@
                     >
                         <div class="main-header">
                             <div class="main-left">
-                                <div class="main-left-top">{{ formatTime(item.create_time,'top')}}</div>
-                                <div class="main-left-bottom">{{ formatTime(item.create_time,'bottom')}}</div>
+                                <div class="main-left-top">{{ formatTime(item.createTime,'top')}}</div>
+                                <div class="main-left-bottom">{{ formatTime(item.createTime,'bottom')}}</div>
                             </div>
                             <div class="main-right">
                                 <div 
-                                    v-if="item.img_url && item.img_url.length > 0" 
+                                    v-if="item.imgUrl && item.imgUrl.length > 0" 
                                     class="first-img"
-                                    :style="`background-image:url(${item.img_url[0]})`"
+                                    :style="`background-image:url(${item.imgUrl[0]})`"
                                 ></div>
                                 <div class="content">
                                     {{ item.content }}
                                 </div>
                             </div>
                         </div>
-                        <div class="main-footer">
+                        <div v-if="item.address" class="main-footer">
                             <van-icon name="location-o" />
                             {{ item.address }}
                         </div>
@@ -56,7 +56,6 @@
 
             </div>
         </div>
-        <!-- <div @click="toDetail({})">点我去详情</div> -->
     </div>
 </template>
 
@@ -161,7 +160,7 @@ export default class MySpace extends Vue {
     }
 
     toDetail(obj:any){
-        this.$router.push(`/baseApp/space/spaceDetail?id=${1}`)
+        this.$router.push(`/baseApp/space/spaceDetail?id=${obj.id}&userId=${obj.userId}`)
     }
 }
 </script>
