@@ -43,6 +43,16 @@ export default class Http {
                 reject(err)
             })
         })
+    }
+
+    axiosHttpDelete(url:any) {
+        return new Promise((resolve, reject) => {
+            axios.delete(url).then((res:any) => {
+                resolve(res.data)
+            }).catch(err => {
+                reject(err)
+            })
+        })
         
     }
 }

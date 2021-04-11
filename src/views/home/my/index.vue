@@ -71,7 +71,7 @@ import { State,Mutation } from 'vuex-class';
 import { loginOut } from '@/util/util'
 import { updateUserImg, userLogin, getUserDetailById } from '@/api/userApi'
 import { Dialog } from 'vant'
-import { Compress } from '@/util/util'
+import { Compress, base64ToBlob, blobToFile } from '@/util/util'
 
 @Component
 export default class MyComponent extends Vue {
@@ -128,7 +128,6 @@ export default class MyComponent extends Vue {
         if (event.target.files && event.target.files.length > 0) {
             this.isLoading = true
             let file:any = event.target.files[0]
-            this.file = file
             let fr:any = new FileReader()
             fr.readAsDataURL(file)
             fr.onload = (imgObj:any) => {
@@ -138,6 +137,7 @@ export default class MyComponent extends Vue {
                     Compress(img,e.path[0].height,e.path[0].width,(newImg:any) => {
                         this.showImg = newImg
                         this.isLoading = false
+                        this.file = blobToFile(base64ToBlob(newImg))
                     })
                 }
             }

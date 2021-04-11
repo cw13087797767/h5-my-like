@@ -93,9 +93,9 @@ export default class uploadImg extends Vue {
                     Compress(img,e.path[0].height,e.path[0].width,(newImg:any) => {
                         this.imgList.push(newImg)
                         this.isLoading = false
-                        setTimeout(() => {
+                        this.$nextTick(() => {
                             this.addTouchEvent()   
-                        });
+                        })
                     })
                 }
             }
@@ -114,14 +114,12 @@ export default class uploadImg extends Vue {
                 item.ontouchend = null
                 item.ontouchstart = (startEvent:any) => {
                     startEvent.preventDefault()
-                    console.log(startEvent)
                     this.touchStartTime = new Date()
                     setTimeout(() => {  
-                        if (domMoveFlag) {     
+                        if (domMoveFlag) {
                             console.log('执行元素位置操作过程')
                             this.showDeleteArea = true
                             let domClient:any = item.getBoundingClientRect()
-                            console.log(domClient)
                             this.firstPosition = {
                                 x:startEvent.changedTouches[0].pageX,
                                 y:startEvent.changedTouches[0].pageY
@@ -135,7 +133,6 @@ export default class uploadImg extends Vue {
                             item.style.zIndex = 9
                             // 添加拖拽事件
                             item.ontouchmove = (moveEvent:any) => {
-                                // console.log(moveEvent)
                                 item.style.top = moveEvent.changedTouches[0].pageY - this.firstPosition.y + domClient.top + 'px'
                                 item.style.left = moveEvent.changedTouches[0].pageX - this.firstPosition.x + domClient.left + 'px'
                             }                        
@@ -144,37 +141,41 @@ export default class uploadImg extends Vue {
                 }
                 item.ontouchend = (endEvent:any) => {
                     let time:any = new Date()
-                    console.log(time - this.touchStartTime)
+                    // touch事件小于400ms，认为是点击事件
                     if (time - this.touchStartTime <= 400) {
                         domMoveFlag = false
                         item.click()
-                        setTimeout(() => {
-                            this.addTouchEvent()   
-                        });
+                        this.addTouchEvent()   
                     } else {
                         let newItemCenter:any = item.getBoundingClientRect()
                         let centerY:any = newItemCenter.top + newItemCenter.height / 2
                         let centerX:any = newItemCenter.left + newItemCenter.width / 2
                         let deleteDom:any = document.querySelector(".deleteImg")
                         let deleteArea:any = deleteDom.getBoundingClientRect()
+                        this.showDeleteArea = false
+                        // 还原样式
+                        item.style.position = 'absolute';
+                        item.style.height = '100%'
+                        item.style.width = '100%'
+                        item.style.top = '0'
+                        item.style.left = '0'
+                        item.style.padding = '10px'
+                        item.style.zIndex = '1'
+                        // 删除操作
                         if (centerY >= deleteArea.top) {
-                            let _imgList = JSON.parse(JSON.stringify(this.imgList))
-                            let currentImg:any = _imgList.splice(index,1)
+                            let _imgList = [...this.imgList]
+                            _imgList.splice(index,1)
                             this.imgList = []
-                            this.showDeleteArea = false
-                            setTimeout(() => {
-                                this.imgList = _imgList
-                                setTimeout(() => {
-                                    this.addTouchEvent()   
-                                });
-                            });
+                            this.imgList = _imgList
+                            this.$nextTick(() => {
+                                this.addTouchEvent()
+                            })
                             return
                         }
-                        this.showDeleteArea = false
                         // 计算所有图片元素所在页面位置
                         let domParentList:any = document.querySelectorAll('.imgCtn')
                         domParentList && domParentList.forEach((domParent:any,cindex:any) => {
-                            let domPos:any = (domParent.getBoundingClientRect())
+                            let domPos:any = domParent.getBoundingClientRect()
                             if ( 
                                 centerY >= domPos.top 
                                 && centerY <= domPos.bottom 
@@ -183,25 +184,16 @@ export default class uploadImg extends Vue {
                             ) {
                                 // 重新排序
                                 console.log('在目标区域内，重新排序')
-                                let _imgList = JSON.parse(JSON.stringify(this.imgList))
+                                let _imgList = [...this.imgList]
                                 let currentImg:any = _imgList.splice(index,1)
                                 _imgList.splice(cindex,0,...currentImg)
                                 this.imgList = []
-                                setTimeout(() => {
-                                    this.imgList = _imgList
-                                    setTimeout(() => {
-                                        this.addTouchEvent()   
-                                    });
-                                });
+                                this.imgList = _imgList
                             }
                         });
-                        // 还原样式
-                        item.style.position = 'absolute';
-                        item.style.height = '100%'
-                        item.style.width = '100%'
-                        item.style.top = '0'
-                        item.style.left = '0'
-                        item.style.padding = '10px'
+                        this.$nextTick(() => {
+                            this.addTouchEvent()
+                        })
                     }
                 }
             })
