@@ -3,6 +3,7 @@ import axios from 'axios'
 export default class Http {
     constructor(){
         axios.interceptors.request.use((config:any):any => {
+            config.headers['Cache-Control'] = 'no-cache'
             const userConfig = window.localStorage.getItem('userConfig')
             const unCheckUrlList:Array<any> = ['/mylike/api/user/login', '/mylike/api/user/register']
             if (unCheckUrlList.includes(config.url)) return config
@@ -33,10 +34,12 @@ export default class Http {
         })
     }
 
-    axiosHttpPostForm(url: any, params: any) {
+    axiosHttpPostForm(url: any, params: any,config?: any ) {
+        console.log(config)
         return new Promise((resolve, reject) => {
             axios.post(url, params, {
-                headers:{ 'Content-Type':'multipart/form-data'}
+                headers:{ 'Content-Type':'multipart/form-data'},
+                ...config
             }).then((res:any) => {
                 resolve(res.data)
             }).catch((err:any) => {

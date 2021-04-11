@@ -13,8 +13,8 @@ export const userLogin = (params: any) => {
 }
 
 // 上传头像
-export const updateUserImg = (params:any) => {
-    return http.axiosHttpPostForm(`/mylike/api/user/updateUserImg`, params)
+export const updateUserImg = (params:any, config?:any) => {
+    return http.axiosHttpPostForm(`/mylike/api/user/updateUserImg`, params, config)
 }
 
 // 用户登录

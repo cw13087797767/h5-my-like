@@ -19,7 +19,9 @@ import {
   DatetimePicker,
   List,
   Toast,
-  Checkbox
+  Checkbox,
+  Progress,
+  PullRefresh 
 } from 'vant';
 import 'vant/lib/index.css';
 import './common/base.css';
@@ -40,6 +42,8 @@ Vue.use(DatetimePicker);
 Vue.use(List);
 Vue.use(Toast);
 Vue.use(Checkbox);
+Vue.use(Progress);
+Vue.use(PullRefresh);
 Vue.use(Lazyload, {
   lazyComponent: true
 });
@@ -47,12 +51,12 @@ Vue.config.productionTip = false;
 
 // import "./mock/home-mock"
 import Vconsole from 'vconsole';
-let vConsole: any = new Vconsole();
-Vue.use(vConsole);
-// if (window.location.href.indexOf('localhost') == -1) {
-//   let vConsole: any = new Vconsole();
-//   Vue.use(vConsole);
-// }
+// let vConsole: any = new Vconsole();
+// Vue.use(vConsole);
+if (window.location.href.indexOf('localhost') == -1) {
+  let vConsole: any = new Vconsole();
+  Vue.use(vConsole);
+}
 
 
 

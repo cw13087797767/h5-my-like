@@ -42,6 +42,20 @@
                 </div>
             </div>
             <div class="deleteImg" v-show="showDeleteArea">拖拽到此处删除图片</div>
+            <div class="uploading" v-if="uploading">
+                <van-circle 
+                    v-model="progress" 
+                    :rate="0"
+                    :speed="100" 
+                    size="150"
+                    :color="{
+                        '0%': '#3fecff',
+                        '100%': '#6149f6',
+                    }"
+                >
+                    <div class="upload-text">上传中。。。</div>
+                </van-circle>
+            </div>
         </div>
         <div v-if="visible">
             <van-popup v-model="visible" position="bottom">
@@ -65,6 +79,7 @@
         >
             <template v-slot:imgPrevIndex>{{ imgPrevIndex }}</template>
         </van-image-preview>
+        
     </div>
 </template>
 
@@ -87,9 +102,23 @@ export default class EditSpace extends Vue {
     private showDeleteArea:boolean = false
     private content:any = ''
     private checked:boolean = true
+    private progress:number = 0
+    private uploading:boolean = false
 
     activated() {
-        
+        this.imgList = []
+        this.visible = false
+        this.isLoading = false
+        this.startPosition = 0
+        this.imgPreview = false
+        this.firstPosition = null
+        this.imgPrevIndex = 0
+        this.touchStartTime = null
+        this.showDeleteArea = false
+        this.content = ''
+        this.checked = true
+        this.progress = 0
+        this.uploading = false
     }
 
     onClickLeft(){
@@ -101,6 +130,7 @@ export default class EditSpace extends Vue {
             this.$toast("说点什么再发布吧")
             return
         }
+        this.uploading = true
         let address = '', lng = '', lat = ''
         if (this.checked) {
             const locationObj:any = await this.getLocation()
@@ -116,7 +146,12 @@ export default class EditSpace extends Vue {
         this.imgList.map((item, index) => {
             formData.append(`file${index}`, blobToFile(base64ToBlob(item)))
         })
-        spaceInsert(formData).then((res:any) => {
+        spaceInsert(formData,{
+            onUploadProgress: (progressEvent:any) => {
+                console.log(progressEvent)
+                this.progress = (progressEvent.loaded / progressEvent.total * 100 | 0)
+             }
+        }).then((res:any) => {
             if (res && res.code === '0') {
                 this.$toast('新增成功')
                 setTimeout(() => {
@@ -127,6 +162,9 @@ export default class EditSpace extends Vue {
             }
         }).catch(err => {
             this.$toast('新增失败')
+        }).finally(() => {
+            this.progress = 0
+            this.uploading = false
         })
     }
 
@@ -400,5 +438,25 @@ export default class EditSpace extends Vue {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.uploading{
+    position: absolute;
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.upload-text{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
 }
 </style>
