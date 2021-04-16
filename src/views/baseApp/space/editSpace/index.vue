@@ -254,17 +254,20 @@ export default class EditSpace extends Vue {
                                 x:startEvent.changedTouches[0].pageX,
                                 y:startEvent.changedTouches[0].pageY
                             }
-                            item.style.position = 'fixed'
-                            item.style.height = domClient.height + 'px'
-                            item.style.width = domClient.width + 'px'
-                            item.style.top = domClient.top + 'px'
-                            item.style.left = domClient.left + 'px'
+                            // item.style.position = 'fixed'
+                            // item.style.height = domClient.height + 'px'
+                            // item.style.width = domClient.width + 'px'
+                            // item.style.top = domClient.top + 'px'
+                            // item.style.left = domClient.left + 'px'
                             item.style.border = 'none'
                             item.style.zIndex = 9
+                            item.style.transition = 'none'
                             // 添加拖拽事件
                             item.ontouchmove = (moveEvent:any) => {
-                                item.style.top = moveEvent.changedTouches[0].pageY - this.firstPosition.y + domClient.top + 'px'
-                                item.style.left = moveEvent.changedTouches[0].pageX - this.firstPosition.x + domClient.left + 'px'
+                                // item.style.top = moveEvent.changedTouches[0].pageY - this.firstPosition.y + domClient.top + 'px'
+                                // item.style.left = moveEvent.changedTouches[0].pageX - this.firstPosition.x + domClient.left + 'px'
+                                item.style.top = moveEvent.changedTouches[0].pageY - domClient.top - (this.firstPosition.y - domClient.top) + 'px'
+                                item.style.left = moveEvent.changedTouches[0].pageX - domClient.left - (this.firstPosition.x - domClient.left) + 'px'
                             }                        
                         }          
                     }, 600);
@@ -284,13 +287,14 @@ export default class EditSpace extends Vue {
                         let deleteArea:any = deleteDom.getBoundingClientRect()
                         this.showDeleteArea = false
                         // 还原样式
-                        item.style.position = 'absolute';
-                        item.style.height = '100%'
-                        item.style.width = '100%'
                         item.style.top = '0'
                         item.style.left = '0'
+                        // item.style.position = 'absolute';
+                        // item.style.height = '100%'
+                        // item.style.width = '100%'
                         item.style.border = 'solid 5px #fff'
                         item.style.zIndex = '1'
+                        item.style.transition = 'all ease 0.5s'
                         // 删除操作
                         if (centerY >= deleteArea.top) {
                             let _imgList = [...this.imgList]
@@ -375,6 +379,7 @@ export default class EditSpace extends Vue {
                         border: solid 5px #fff;
                         box-sizing: border-box;
                         border-radius: 10px;
+                        transition: all ease 0.5s;
                     }
                 }
                 .imgBody_un{
