@@ -49,3 +49,22 @@ export const blobToFile = (blob:any) => {
     blob.name = new Date().valueOf().toString()
     return blob
 }
+
+/**
+ * 获取圆周上等分点的坐标
+ * @param r 半径
+ * @param count 等分个数
+ */
+export const getCiclePoints = (r:number, count:number) => {
+    const points:Array<any> = []
+    // 弧度
+    const radians = (Math.PI / 180) * Math.round(360 / count)
+    for (let i = 0; i < count; i++) {
+        const x = r * Math.sin(radians * i)
+        const y = r * Math.cos(radians * i)
+        const rotate =  Math.PI / count * i * 2
+        points.unshift({x, y, rotate})
+    }
+    console.log(points)
+    return points
+}

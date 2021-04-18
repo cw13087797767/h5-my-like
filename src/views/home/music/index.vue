@@ -5,7 +5,7 @@
             title="音乐"
         />
         <div class="home-body">
-            
+            <Music3D></Music3D>
         </div>
     </div>
 </template>
@@ -13,9 +13,14 @@
 <script lang='ts'>
 import { Vue, Component } from 'vue-property-decorator'
 import { State,Mutation } from 'vuex-class'
+import Music3D from '@/components/home/music/index.vue'
 
-@Component
-export default class a extends Vue{
+@Component({
+    components:{
+        Music3D
+    }
+})
+export default class MusicComponent extends Vue{
 
     activated(){
 
@@ -31,6 +36,7 @@ export default class a extends Vue{
         .home-body{
             height: calc(~"100% - 90px");
             overflow: auto;
+            position: relative;
         }
     }
 </style>
