@@ -65,6 +65,9 @@ export const getCiclePoints = (r:number, count:number) => {
         const rotate =  Math.PI / count * i * 2
         points.unshift({x, y, rotate})
     }
-    console.log(points)
     return points
+}
+
+export const randomRange = (a:any, range:any) => {
+    return a + (Math.random() - 0.5) * range
 }
