@@ -18,6 +18,7 @@
     "dayjs": "^1.10.4",
     "mockjs": "^1.1.0",
     "openlayers": "^4.6.5",
+    "stats-js": "^1.0.1",
     "three": "^0.127.0",
     "three-orbitcontrols": "^2.110.3",
     "three-orbitcontrols-ts": "^0.1.2",

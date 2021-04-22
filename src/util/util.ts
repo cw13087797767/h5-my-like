@@ -71,3 +71,14 @@ export const getCiclePoints = (r:number, count:number) => {
 export const randomRange = (a:any, range:any) => {
     return a + (Math.random() - 0.5) * range
 }
+
+export const range = (start:number, end:number, step = 1, fromRight = false) => {
+    let index = -1,
+    length = Math.max(Math.ceil((end - start) / step), 0),
+    result = Array(length);
+    while (length--) {
+        result[fromRight ? length : ++index] = start;
+        start += step;
+    }
+    return result;
+}

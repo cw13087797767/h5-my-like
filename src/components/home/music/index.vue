@@ -1,5 +1,5 @@
 <template>
-    <div class='home'>
+    <div class='home' id="homeCtn">
         <div id="musicId" style="width:100%; height:100%"></div>
     </div>
 </template>
@@ -8,10 +8,13 @@
 import { Vue, Component } from 'vue-property-decorator'
 import { State,Mutation } from 'vuex-class'
 import * as THREE from 'three'
-import { OrbitControls } from 'three-orbitcontrols-ts'
+// import { OrbitControls } from 'three-orbitcontrols-ts'
+const OrbitControls = require("three-orbitcontrols")
 const m79621 = require("@/assets/mp3/79621.mp3")
-import { getCiclePoints, randomRange } from '@/util/util'
+import { getCiclePoints, randomRange, range } from '@/util/util'
 import Triangle from '@/components/commom/base-component/triangle'
+import node from '@/components/commom/base-component/node'
+const Stats = require('stats-js')
 
 @Component
 export default class Music3D extends Vue{
@@ -29,6 +32,11 @@ export default class Music3D extends Vue{
     private triangleGroup:any = null    // 随即三角形分组
     private triangleArr:Array<any> = [] // 随即三角形数组
     private threeClock:any = new THREE.Clock()  // three时间
+    private barNodes:Array<any> = []    // 音频柱状节点
+    private barLines:Array<any> = []    // 音频线
+    private outLine:any = null          // 音频外线
+    private inLine:any = null           // 音频内线
+    private linesGroup:any = null       // 音频线分组
 
     mounted(){
         this.renderFunc()
@@ -50,12 +58,10 @@ export default class Music3D extends Vue{
             require('@/assets/img/front.jpg'),
             require('@/assets/img/back.jpg'),
         ])
-
         // 添加相机
         const domCtn:any = document.getElementById("musicId")
         const width:number = domCtn.offsetWidth
         const height:number = domCtn.offsetHeight
-
         this.camera = new THREE.PerspectiveCamera(75, width / height, 1, 10000)
         this.camera.position.set(200, 200, 800)
         this.camera.lookAt(this.Scene.position)
@@ -64,39 +70,84 @@ export default class Music3D extends Vue{
         this.webGLRenderer = new THREE.WebGLRenderer({antialias: true})
         this.webGLRenderer.setSize(width, height)
         domCtn.appendChild(this.webGLRenderer.domElement)
-        // 控制器
-        this.controls = new OrbitControls(this.camera, this.webGLRenderer.domElement)
-        // 坐标轴
-        // const axesHelper = new THREE.AxesHelper(250)
-        // this.Scene.add(axesHelper)
-        
+
+        // 初始化坐标轴
+        this.initAxesHelper()
+
+        // 初始化控制器
+        this.initControls()
+
         // 创建音频显示分组
-        // this.addAudioGroup()
+        this.addAudioGroup(100, 128)
+
+        // 创建音频线分组
+        this.addAudioLines(100, 256)
 
         // 随机三角形分组
         this.addTriangleGroup()
 
+        // 加载音频监听器
         this.addListener()
+
+        // 初始化环境光和平行光
+        this.initLight()
+
         // 定时渲染
         const renderTimer = () => {
             this.webGLRenderer.render(this.Scene, this.camera)
             requestAnimationFrame(renderTimer)
             if (this.analyser) {
-                // 获得频率数据N个
-                const arr = this.analyser.getFrequencyData()
-                this.audioBarGroup && this.audioBarGroup.children.forEach((elem:any, index:any) => {
-                    const scaleZ = arr[index * 2] / 50
-                    const colorPercent = arr[index * 2] / 200
-                    elem.scale.z = scaleZ < 0.2 ? 0.2 : scaleZ
-                    elem.material.color.g = colorPercent < 0.5 ? 0.5 : (colorPercent > 0.8 ? 0.8 : colorPercent)
-                })
-                const Delta = this.threeClock.getDelta()
-                this.triangleArr.map((item:any) => {
-                    item.transition(Delta)
-                })
+
             }
+            const Delta = this.threeClock.getDelta()
+            this.triangleArr.map((item:any) => {
+                item.transition(Delta)
+            })
         } 
         renderTimer()
+
+        // 初始化FPS显示
+        this.initStats()
+    }
+
+    // FPS显示
+    initStats(){
+        const stats:any = new Stats()
+        stats.domElement.style.top = '40px';
+        document.getElementById('homeCtn')?.appendChild(stats.dom)
+    }
+
+    // 初始化辅助坐标轴
+    initAxesHelper(){
+        this.Scene.add(new THREE.AxesHelper(500))
+    }
+
+    // 初始化控制器
+    initControls(){
+        this.controls = new OrbitControls(this.camera, this.webGLRenderer.domElement)
+        // 使动画循环使用时阻尼或自转 意思是否有惯性
+        this.controls.enableDamping = true
+        //动态阻尼系数 就是鼠标拖拽旋转灵敏度
+        this.controls.dampingFactor = 0.25
+        //是否可以缩放
+        this.controls.enableZoom = true
+        //是否自动旋转
+        this.controls.autoRotate = true
+        //设置相机距离原点的最远距离
+        this.controls.minDistance = 1;
+        //设置相机距离原点的最远距离
+        this.controls.maxDistance = 200;
+        //是否开启右键拖拽
+        this.controls.enablePan = false;
+    }
+
+    // 环境光，平行光
+    initLight(){
+        this.Scene.add(new THREE.AmbientLight(0x444444))
+        const light = new THREE.PointLight(0xffffff)
+        light.position.set(80, 100, 50)
+        light.castShadow = true
+        this.Scene.add(light)
     }
 
     // 添加监听
@@ -106,38 +157,94 @@ export default class Music3D extends Vue{
         this.audio = new THREE.Audio(this.linstener)
         this.audioLoader = new THREE.AudioLoader()
         this.audioLoader.load(m79621, (AudioBuffer: any) => {
+            if (this.audio.isPlaying) {
+                this.audio.stop()
+                this.audio.setBuffer()
+            }
             this.audio.setBuffer(AudioBuffer)   // 音频缓冲区对象关联到音频对象audio
             this.audio.setLoop(false)           //是否循环
-            this.audio.setVolume(0.5)           //音量
+            this.audio.setVolume(1)           //音量
             this.audio.play()                   //播放
             // 音频分析器和音频绑定，可以实时采集音频时域数据进行快速傅里叶变换
-            this.analyser = new THREE.AudioAnalyser(this.audio)
+            this.analyser = new THREE.AudioAnalyser(this.audio, 512)
         })
     }
 
     // 音频柱子
-    addAudioGroup(){
+    addAudioGroup(R:number, N:number){
         this.audioBarGroup = new THREE.Group()
-        //控制音频分析器返回频率数据数量
-        const points:Array<any> = getCiclePoints(200,128)
-        points.map((item:any) => {
-            //创建一个立方体几何对象
-            const box:any = new THREE.BoxGeometry(10, 10, 10)
-            // box.rotateY(item.rotate)
-            //材质对象
-            const material:any = new THREE.MeshBasicMaterial({
-                color:0x0080ff,
-                // opacity:0.6,
-                transparent:true
+        for (let i = 0; i < N; i++) {
+            const minGroup = new THREE.Group()
+            const boxGeo = new THREE.BoxGeometry(1,1,1)
+            const material = new THREE.MeshPhongMaterial({
+                color:0x00ffff
             })
-            //网格模型对象
-            const mesh:any = new THREE.Mesh(box, material)
-            mesh.position.set(item.x, 0, item.y)
-            mesh.scale.z = 0.2
-            mesh.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), item.rotate)
-            this.audioBarGroup.add(mesh)
-        })
+            const mesh = new THREE.Mesh(boxGeo, material)
+            mesh.position.y = 0.5
+            minGroup.add(mesh)
+            minGroup.position.set(
+                Math.sin(((i * Math.PI) / N) * 2) * R,
+                Math.cos(((i * Math.PI) / N) * 2) * R,
+                0
+            )
+            minGroup.rotation.z = ((-i * Math.PI) / N) * 2
+            this.audioBarGroup.add(minGroup)
+        }
         this.Scene.add(this.audioBarGroup)
+    }
+
+    // 音频线
+    addAudioLines(R:number, N:number){
+        this.barNodes = range(0, N).map(item => new node(
+            R,
+            ((item / N) * 360 + 45) % 360,
+            new THREE.Vector2(0, 0)
+        ))
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color:0x00ffff
+        })
+        this.barLines = range(0, N).map(item => new THREE.Line(
+            new THREE.BufferGeometry().setAttribute(
+                'position',
+                this.renderGeometries([
+                    this.barNodes[item].positionA(),
+                    this.barNodes[item].positionB(),
+                ])
+            ),
+            lineMaterial
+        ))
+        this.outLine = new THREE.Line(
+            new THREE.BufferGeometry().setAttribute(
+                'position',
+                this.renderGeometries(this.barNodes.map(node => node.positionA()))
+            ),
+            lineMaterial
+        )
+        this.inLine = new THREE.Line(
+            new THREE.BufferGeometry().setAttribute(
+                'position',
+                this.renderGeometries(this.barNodes.map(node => node.positionB()))
+            ),
+            lineMaterial
+        )
+
+        this.linesGroup = new THREE.Group()
+        this.linesGroup.add(this.outLine)
+        this.linesGroup.add(this.inLine)
+        this.barLines.map(item => {
+            this.linesGroup.add(item)
+        })
+        this.Scene.add(this.linesGroup)
+
+    }
+
+    renderGeometries(vertices:Array<any>){
+        const res:Array<any> = []
+        vertices = vertices.concat(vertices[0])
+        vertices.map(item => {
+            res.push(item.x, item.y, 0)
+        })
+        return new THREE.BufferAttribute(new Float32Array(res), 3)
     }
 
     // 随机三角形
