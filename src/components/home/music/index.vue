@@ -20,7 +20,6 @@ const Stats = require('stats-js')
 export default class Music3D extends Vue{
 
     private Scene:any = null            // 场景
-    private ambientLine:any = null      // 环境光
     private camera:any = null           // 相机
     private webGLRenderer:any = null    // 渲染器
     private controls:any = null         // 控制器
@@ -38,7 +37,7 @@ export default class Music3D extends Vue{
     private inLine:any = null           // 音频内线
     private linesGroup:any = null       // 音频线分组
     private stats:any = null            // FPS查看器
-    private scale:number = 1            
+    private scale:number = 1            // 变化幅度
 
     mounted(){
         this.renderFunc()
@@ -86,7 +85,7 @@ export default class Music3D extends Vue{
         this.addAudioGroup(100, 128)
 
         // 创建音频线分组
-        this.addAudioLines(100, 256)
+        this.addAudioLines(80, 256)
 
         // 随机三角形分组
         this.addTriangleGroup()
@@ -140,7 +139,33 @@ export default class Music3D extends Vue{
     }
 
     updateCircle(arr:Array<any>){
+        if (this.barNodes) {
+            this.linesGroup.scale.set(this.scale, this.scale, this.scale)
+            const geometryA = this.outLine.geometry
+            const attributeA = geometryA.getAttribute('position')
+            const geometryB = this.inLine.geometry
+            const attributeB = geometryB.getAttribute('position')
+            const positions = this.barNodes.map(item => [item.positionA(), item.positionB()])
 
+            positions.map((item, index) => {
+                attributeA.set([item[0].x, item[0].y], index * 3)
+                attributeB.set([item[1].x, item[1].y], index * 3)
+                const geometry = this.barLines[index].geometry
+                const attribute = geometry.getAttribute('position')
+                attribute.set([item[0].x, item[0].y, 0, item[1].x, item[1].y, 0], 0)
+                attribute.needsUpdate = true
+            })
+            attributeA.set(
+            [attributeA.array[0], attributeA.array[1]],
+            positions.length * 3
+            );
+            attributeB.set(
+            [attributeB.array[0], attributeB.array[1]],
+            positions.length * 3
+            );
+            attributeA.needsUpdate = true;
+            attributeB.needsUpdate = true;
+        }
     }
 
     // FPS显示
