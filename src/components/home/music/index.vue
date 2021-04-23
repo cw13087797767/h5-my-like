@@ -37,6 +37,8 @@ export default class Music3D extends Vue{
     private outLine:any = null          // 音频外线
     private inLine:any = null           // 音频内线
     private linesGroup:any = null       // 音频线分组
+    private stats:any = null            // FPS查看器
+    private scale:number = 1            
 
     mounted(){
         this.renderFunc()
@@ -63,7 +65,7 @@ export default class Music3D extends Vue{
         const width:number = domCtn.offsetWidth
         const height:number = domCtn.offsetHeight
         this.camera = new THREE.PerspectiveCamera(75, width / height, 1, 10000)
-        this.camera.position.set(200, 200, 800)
+        this.camera.position.set(200, 200, 200)
         this.camera.lookAt(this.Scene.position)
 
         // 渲染器
@@ -72,7 +74,10 @@ export default class Music3D extends Vue{
         domCtn.appendChild(this.webGLRenderer.domElement)
 
         // 初始化坐标轴
-        this.initAxesHelper()
+        // this.initAxesHelper()
+
+        // 初始化FPS显示
+        this.initStats()
 
         // 初始化控制器
         this.initControls()
@@ -92,29 +97,57 @@ export default class Music3D extends Vue{
         // 初始化环境光和平行光
         this.initLight()
 
-        // 定时渲染
-        const renderTimer = () => {
-            this.webGLRenderer.render(this.Scene, this.camera)
-            requestAnimationFrame(renderTimer)
-            if (this.analyser) {
+        // 定时动态渲染
+        this.animate()
+    }
 
+    // 动态渲染
+    animate(){
+        this.stats.update()
+        this.controls.update()
+        if (this.analyser) {
+            const arr:Array<any> = this.analyser.getFrequencyData()
+            if (this.audioBarGroup) {
+                this.audioBarGroup.rotation.z += 0.002
+                this.audioBarGroup.scale.set(this.scale, this.scale, this.scale)
+                this.audioBarGroup.children.map((item:any,index:number) => {
+                    item.children[0].material.color.r = arr[index] / 100 * 3
+                    item.children[0].material.color.r = arr[index] / 150 * 3
+                    item.children[0].material.color.r = arr[index] / 200 * 3
+                    if (arr[index] === 0) {
+                        item.scale.set(0, 0, 0)
+                    } else {
+                        let m = arr[index] / 20
+                        const targetRange = Math.max(arr[index] / 20 - arr[index - 1] / 20, 0)
+                        m < targetRange ? m = targetRange : null
+                        item.scale.set(1, m, 1)
+                    }
+                })
             }
             const Delta = this.threeClock.getDelta()
+            this.barNodes.forEach((node:any, index:number, array:Array<any>) => {
+                node.strength(arr[index % array.length] * 0.1)
+                node.transition(Delta)
+            })
+            this.scale = 1 + arr[Math.ceil(arr.length * 0.05)] / 500
+            this.updateCircle(arr)
             this.triangleArr.map((item:any) => {
                 item.transition(Delta)
             })
-        } 
-        renderTimer()
+        }
+        this.webGLRenderer.render(this.Scene, this.camera)
+        requestAnimationFrame(this.animate)
+    }
 
-        // 初始化FPS显示
-        this.initStats()
+    updateCircle(arr:Array<any>){
+
     }
 
     // FPS显示
     initStats(){
-        const stats:any = new Stats()
-        stats.domElement.style.top = '40px';
-        document.getElementById('homeCtn')?.appendChild(stats.dom)
+        this.stats = new Stats()
+        this.stats.domElement.style.top = '40px';
+        document.getElementById('homeCtn')?.appendChild(this.stats.dom)
     }
 
     // 初始化辅助坐标轴
@@ -136,7 +169,7 @@ export default class Music3D extends Vue{
         //设置相机距离原点的最远距离
         this.controls.minDistance = 1;
         //设置相机距离原点的最远距离
-        this.controls.maxDistance = 200;
+        this.controls.maxDistance = 800;
         //是否开启右键拖拽
         this.controls.enablePan = false;
     }
@@ -269,7 +302,7 @@ export default class Music3D extends Vue{
 
     makeTriangle(material:any, lineMaterial:any, cb:any){
         return new Triangle(
-            100,
+            30,
             new THREE.Vector3(0, 0, 0),
             Math.random() * 360,
             randomRange(5, 1),
