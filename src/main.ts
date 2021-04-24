@@ -53,10 +53,10 @@ Vue.config.productionTip = false;
 import Vconsole from 'vconsole';
 // let vConsole: any = new Vconsole();
 // Vue.use(vConsole);
-if (window.location.href.indexOf('localhost') == -1) {
-  let vConsole: any = new Vconsole();
-  Vue.use(vConsole);
-}
+// if (window.location.href.indexOf('localhost') == -1) {
+//   let vConsole: any = new Vconsole();
+//   Vue.use(vConsole);
+// }
 
 
 

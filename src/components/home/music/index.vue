@@ -11,6 +11,7 @@ import * as THREE from 'three'
 // import { OrbitControls } from 'three-orbitcontrols-ts'
 const OrbitControls = require("three-orbitcontrols")
 const m79621 = require("@/assets/mp3/79621.mp3")
+const m875689 = require("@/assets/mp3/875689.mp3")
 import { getCiclePoints, randomRange, range } from '@/util/util'
 import Triangle from '@/components/commom/base-component/triangle'
 import node from '@/components/commom/base-component/node'
@@ -76,7 +77,7 @@ export default class Music3D extends Vue{
         // this.initAxesHelper()
 
         // 初始化FPS显示
-        this.initStats()
+        // this.initStats()
 
         // 初始化控制器
         this.initControls()
@@ -102,7 +103,7 @@ export default class Music3D extends Vue{
 
     // 动态渲染
     animate(){
-        this.stats.update()
+        this.stats && this.stats.update()
         this.controls.update()
         if (this.analyser) {
             const arr:Array<any> = this.analyser.getFrequencyData()
@@ -110,13 +111,13 @@ export default class Music3D extends Vue{
                 this.audioBarGroup.rotation.z += 0.002
                 this.audioBarGroup.scale.set(this.scale, this.scale, this.scale)
                 this.audioBarGroup.children.map((item:any,index:number) => {
-                    item.children[0].material.color.r = arr[index] / 100 * 3
-                    item.children[0].material.color.r = arr[index] / 150 * 3
-                    item.children[0].material.color.r = arr[index] / 200 * 3
+                    // item.children[0].material.color.r = arr[index] / 100 * 3
+                    // item.children[0].material.color.g = arr[index] / 150 * 3
+                    item.children[0].material.color.b = arr[index] / 50 * 3
                     if (arr[index] === 0) {
                         item.scale.set(0, 0, 0)
                     } else {
-                        let m = arr[index] / 20
+                        let m = arr[index] / 10
                         const targetRange = Math.max(arr[index] / 20 - arr[index - 1] / 20, 0)
                         m < targetRange ? m = targetRange : null
                         item.scale.set(1, m, 1)
@@ -156,12 +157,12 @@ export default class Music3D extends Vue{
                 attribute.needsUpdate = true
             })
             attributeA.set(
-            [attributeA.array[0], attributeA.array[1]],
-            positions.length * 3
+                [attributeA.array[0], attributeA.array[1]],
+                positions.length * 3
             );
             attributeB.set(
-            [attributeB.array[0], attributeB.array[1]],
-            positions.length * 3
+                [attributeB.array[0], attributeB.array[1]],
+                positions.length * 3
             );
             attributeA.needsUpdate = true;
             attributeB.needsUpdate = true;
@@ -205,7 +206,11 @@ export default class Music3D extends Vue{
         const light = new THREE.PointLight(0xffffff)
         light.position.set(80, 100, 50)
         light.castShadow = true
+        const light2 = new THREE.PointLight(0xffffff)
+        light2.position.set(-80, -100, -50)
+        light2.castShadow = true
         this.Scene.add(light)
+        this.Scene.add(light2)
     }
 
     // 添加监听
