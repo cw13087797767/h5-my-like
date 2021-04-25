@@ -21,7 +21,9 @@ import {
   Toast,
   Checkbox,
   Progress,
-  PullRefresh 
+  PullRefresh,
+  Tab, 
+  Tabs
 } from 'vant';
 import 'vant/lib/index.css';
 import './common/base.css';
@@ -44,13 +46,16 @@ Vue.use(Toast);
 Vue.use(Checkbox);
 Vue.use(Progress);
 Vue.use(PullRefresh);
+Vue.use(Tab);
+Vue.use(Tabs);
 Vue.use(Lazyload, {
   lazyComponent: true
 });
 Vue.config.productionTip = false;
 
+
 // import "./mock/home-mock"
-import Vconsole from 'vconsole';
+// import Vconsole from 'vconsole';
 // let vConsole: any = new Vconsole();
 // Vue.use(vConsole);
 // if (window.location.href.indexOf('localhost') == -1) {

@@ -226,8 +226,8 @@ export default class Music3D extends Vue{
             }
             this.audio.setBuffer(AudioBuffer)   // 音频缓冲区对象关联到音频对象audio
             this.audio.setLoop(false)           //是否循环
-            this.audio.setVolume(1)           //音量
-            this.audio.play()                   //播放
+            this.audio.setVolume(1)             //音量
+            // this.audio.play()                   //播放
             // 音频分析器和音频绑定，可以实时采集音频时域数据进行快速傅里叶变换
             this.analyser = new THREE.AudioAnalyser(this.audio, 512)
         })
