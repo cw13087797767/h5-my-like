@@ -10,14 +10,38 @@
         </van-nav-bar>
         <div class="home-body">
             <div class="config-ctn" :style="`max-height:${showConfig ? '150px' :'0px'}`">
-                <van-tabs v-model="activeType">
+                <van-tabs v-model="activeType" class="music-tabs">
                     <van-tab title="三角形" name="0">
                         <div class="tab-ctn">
-                            <slider-picker v-model="TriangleColors"></slider-picker>
+                            <slider-picker v-model="TriangleColors" @input="updateColor"></slider-picker>
                         </div>
                     </van-tab>
-                    <van-tab title="音频柱子" name="1">内容 2</van-tab>
-                    <van-tab title="音频线" name="2">内容 3</van-tab>
+                    <van-tab title="音频柱子" name="1">
+                        <div class="tab-ctn">
+                            <slider-picker v-model="barColors" @input="updateColor"></slider-picker>
+                        </div>
+                    </van-tab>
+                    <van-tab title="音频线" name="2">
+                        <div class="tab-ctn">
+                            <slider-picker v-model="linesColors" @input="updateColor"></slider-picker>
+                        </div>
+                    </van-tab>
+                    <van-tab title="其他配置" name="3">
+                        <div class="tab-ctn">
+                            <!-- <p style="color:#fff">
+                                <span>切换背景：</span>
+                                <van-radio-group v-model="bgImgRadio" direction="horizontal">
+                                    <van-radio name="1"><span style="color:#fff">幻夜星空</span></van-radio>
+                                    <van-radio name="2"><span style="color:#fff">璀璨灯火</span></van-radio>
+                                    <van-radio name="3"><span style="color:#fff">魔幻世界</span></van-radio>
+                                </van-radio-group>
+                            </p> -->
+                            <p style="color:#fff;padding-top:5px">
+                                <span>视角旋转：</span>
+                                <van-checkbox v-model="autoRotate" shape="square"><span style="color:#fff">自动旋转</span></van-checkbox>
+                            </p>
+                        </div>
+                    </van-tab>
                 </van-tabs>
                 <div class="close" @click="showConfig=false">
                     <van-icon name="arrow-up" color="#fff" size="30"/>
@@ -30,7 +54,12 @@
             >
                 <van-icon name="arrow-down" color="#fff" size="30"/>
             </div>
-            <Music3D></Music3D>
+            <Music3D 
+                :TriangleColors="TriangleColors.hex"
+                :barColors="barColors.hex"
+                :linesColors="linesColors.hex"
+                :autoRotate="autoRotate"
+            />
         </div>
     </div>
 </template>
@@ -50,20 +79,53 @@ import { Slider } from 'vue-color'
 export default class MusicComponent extends Vue{
 
     private TriangleColors:any = {
-        hex: "#194d33",
+        hex: "#B3E5D5",
     }
     private barColors:any = {
-        hex: "#194d33",
+        hex: "#79B6D2",
     }
     private linesColors:any = {
-        hex: "#194d33",
+        hex: "#BF4096",
     }
     private showConfig:boolean = false
     private activeType:string = '0'
+    private colorTimer:any = null
+    private autoRotate:boolean = true
+    private bgImgRadio:string = '1'
+
+    mounted() {
+        const musicColorConfig = window.localStorage.getItem('musicColorConfig')
+        if (musicColorConfig) {
+            const {
+                TriangleColors,
+                barColors,
+                linesColors,
+            } = JSON.parse(musicColorConfig)
+            this.TriangleColors.hex = TriangleColors
+            this.barColors.hex = barColors
+            this.linesColors.hex = linesColors
+        }
+    }
 
     activated(){
         
     }
+
+    updateColor(){
+        if (this.colorTimer) {
+            clearTimeout(this.colorTimer)
+            this.colorTimer = null
+        }
+        this.colorTimer = setTimeout(() => {
+            const musicColorConfig = {
+                TriangleColors:this.TriangleColors.hex,
+                barColors:this.barColors.hex,
+                linesColors:this.linesColors.hex,
+            }
+            window.localStorage.setItem('musicColorConfig',JSON.stringify(musicColorConfig))
+        }, 200);
+    }
+
 
     handleShowConfig(){
         this.showConfig = !this.showConfig
@@ -116,5 +178,20 @@ export default class MusicComponent extends Vue{
     }
     .vc-slider{
         width: 100%;
+    }
+    .music-tabs{
+        /deep/.van-tabs__nav{
+            background-color: transparent;
+        }
+        /deep/.van-tab{
+            color: #fff;
+        }
+        /deep/.van-tab--active{
+            color: #fff;
+            font-weight: bold;
+        }
+        /deep/.van-tabs__line{
+            background-color: #f7f8fa;
+        }
     }
 </style>

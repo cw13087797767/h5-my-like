@@ -5,10 +5,8 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component } from 'vue-property-decorator'
-import { State,Mutation } from 'vuex-class'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import * as THREE from 'three'
-// import { OrbitControls } from 'three-orbitcontrols-ts'
 const OrbitControls = require("three-orbitcontrols")
 const m79621 = require("@/assets/mp3/79621.mp3")
 const m875689 = require("@/assets/mp3/875689.mp3")
@@ -19,6 +17,44 @@ const Stats = require('stats-js')
 
 @Component
 export default class Music3D extends Vue{
+
+    @Prop() TriangleColors:any
+    @Prop() barColors:any
+    @Prop() linesColors:any
+    @Prop() autoRotate:any
+
+    @Watch('linesColors')
+    watchLinesColors(newval:any, oldval:any){
+        if (newval && newval !== oldval) {
+            this.linesGroup.traverse((item:any) => {
+                if (item.isLine) {
+                    item.material = new THREE.LineBasicMaterial({
+                        color: Number('0x' + newval.slice(1))
+                    })
+                }
+            })
+        }
+    }
+
+    @Watch('barColors')
+    watchBarColors(newval:any, oldval:any){
+        if (newval && newval !== oldval) {
+            this.audioBarGroup.traverse((item:any) => {
+                console.log()
+                if (item.type === "Mesh") {
+                    item.material = new THREE.LineBasicMaterial({
+                        color: Number('0x' + newval.slice(1))
+                    })
+                }
+            })
+        }
+    }
+    @Watch('autoRotate')
+    watchAutoRotate(newval:boolean){
+        if (this.controls) {
+            this.controls.autoRotate = newval
+        }
+    }
 
     private Scene:any = null            // 场景
     private camera:any = null           // 相机
@@ -31,7 +67,7 @@ export default class Music3D extends Vue{
     private audioBarGroup:any = null    // 音频柱子分组
     private triangleGroup:any = null    // 随即三角形分组
     private triangleArr:Array<any> = [] // 随即三角形数组
-    private threeClock:any = new THREE.Clock()  // three时间
+    private threeClock:any = new THREE.Clock()  // three计时
     private barNodes:Array<any> = []    // 音频柱状节点
     private barLines:Array<any> = []    // 音频线
     private outLine:any = null          // 音频外线
@@ -42,10 +78,33 @@ export default class Music3D extends Vue{
 
     mounted(){
         this.renderFunc()
+        window.addEventListener('resize',this.windowResize)
+    }
+
+    beforeDestroy() {
+        window.removeEventListener('resize', this.windowResize)   
     }
 
     activated(){
 
+    }
+
+    // 播放/暂停
+    handleAudioPlay(flag:boolean){
+        if (this.audio) {
+            flag ? this.audio.play() : this.audio.stop()
+        }
+    }
+
+    windowResize(){
+        if (this.camera) {
+            const domCtn:any = document.getElementById("musicId")
+            const width:number = domCtn.offsetWidth
+            const height:number = domCtn.offsetHeight
+            this.camera.aspect = width / height
+            this.camera.updateProjectionMatrix()
+            this.webGLRenderer.setSize(width, height)
+        }
     }
 
     // 渲染入口
@@ -58,14 +117,14 @@ export default class Music3D extends Vue{
             require('@/assets/img/top.jpg'),
             require('@/assets/img/bottom.jpg'),
             require('@/assets/img/front.jpg'),
-            require('@/assets/img/back.jpg'),
+            require('@/assets/img/back.jpg'),          
         ])
         // 添加相机
         const domCtn:any = document.getElementById("musicId")
         const width:number = domCtn.offsetWidth
         const height:number = domCtn.offsetHeight
         this.camera = new THREE.PerspectiveCamera(75, width / height, 1, 10000)
-        this.camera.position.set(200, 200, 200)
+        this.camera.position.set(0, 0, 400)
         this.camera.lookAt(this.Scene.position)
 
         // 渲染器
@@ -113,7 +172,7 @@ export default class Music3D extends Vue{
                 this.audioBarGroup.children.map((item:any,index:number) => {
                     // item.children[0].material.color.r = arr[index] / 100 * 3
                     // item.children[0].material.color.g = arr[index] / 150 * 3
-                    item.children[0].material.color.b = arr[index] / 50 * 3
+                    // item.children[0].material.color.b = arr[index] / 50 * 3
                     if (arr[index] === 0) {
                         item.scale.set(0, 0, 0)
                     } else {
@@ -191,7 +250,7 @@ export default class Music3D extends Vue{
         //是否可以缩放
         this.controls.enableZoom = true
         //是否自动旋转
-        this.controls.autoRotate = true
+        this.controls.autoRotate = !!this.autoRotate
         //设置相机距离原点的最远距离
         this.controls.minDistance = 1;
         //设置相机距离原点的最远距离
@@ -227,7 +286,7 @@ export default class Music3D extends Vue{
             this.audio.setBuffer(AudioBuffer)   // 音频缓冲区对象关联到音频对象audio
             this.audio.setLoop(false)           //是否循环
             this.audio.setVolume(1)             //音量
-            // this.audio.play()                   //播放
+            this.audio.play()                   //播放
             // 音频分析器和音频绑定，可以实时采集音频时域数据进行快速傅里叶变换
             this.analyser = new THREE.AudioAnalyser(this.audio, 512)
         })
@@ -240,7 +299,7 @@ export default class Music3D extends Vue{
             const minGroup = new THREE.Group()
             const boxGeo = new THREE.BoxGeometry(1,1,1)
             const material = new THREE.MeshPhongMaterial({
-                color:0x00ffff
+                color:Number('0x' + this.barColors.slice(1))
             })
             const mesh = new THREE.Mesh(boxGeo, material)
             mesh.position.y = 0.5
@@ -264,7 +323,7 @@ export default class Music3D extends Vue{
             new THREE.Vector2(0, 0)
         ))
         const lineMaterial = new THREE.LineBasicMaterial({
-            color:0x00ffff
+            color: Number('0x' + this.linesColors.slice(1))
         })
         this.barLines = range(0, N).map(item => new THREE.Line(
             new THREE.BufferGeometry().setAttribute(
@@ -315,10 +374,10 @@ export default class Music3D extends Vue{
         this.triangleGroup = new THREE.Group()
         setInterval(() => {
             const material = new THREE.MeshBasicMaterial({
-                color: 0x03a9f4
+                color: Number('0x' + this.TriangleColors.slice(1))
             })
             const lineMaterial = new THREE.LineBasicMaterial({
-                color: 0x03a9f4
+                color: Number('0x' + this.TriangleColors.slice(1))
             })
             const triangle = this.makeTriangle(material, lineMaterial, (data:any) => {
                 this.triangleArr = this.triangleArr.filter(item => item !== data)

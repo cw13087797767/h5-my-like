@@ -23,7 +23,9 @@ import {
   Progress,
   PullRefresh,
   Tab, 
-  Tabs
+  Tabs,
+  RadioGroup,
+  Radio
 } from 'vant';
 import 'vant/lib/index.css';
 import './common/base.css';
@@ -48,6 +50,8 @@ Vue.use(Progress);
 Vue.use(PullRefresh);
 Vue.use(Tab);
 Vue.use(Tabs);
+Vue.use(RadioGroup);
+Vue.use(Radio);
 Vue.use(Lazyload, {
   lazyComponent: true
 });
