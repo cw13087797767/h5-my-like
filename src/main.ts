@@ -25,7 +25,8 @@ import {
   Tab, 
   Tabs,
   RadioGroup,
-  Radio
+  Radio,
+  Slider,
 } from 'vant';
 import 'vant/lib/index.css';
 import './common/base.css';
@@ -52,6 +53,7 @@ Vue.use(Tab);
 Vue.use(Tabs);
 Vue.use(RadioGroup);
 Vue.use(Radio);
+Vue.use(Slider);
 Vue.use(Lazyload, {
   lazyComponent: true
 });

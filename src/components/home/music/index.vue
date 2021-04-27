@@ -6,6 +6,7 @@
 
 <script lang='ts'>
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { State, Mutation } from 'vuex-class'
 import * as THREE from 'three'
 const OrbitControls = require("three-orbitcontrols")
 const m79621 = require("@/assets/mp3/79621.mp3")
@@ -17,6 +18,10 @@ const Stats = require('stats-js')
 
 @Component
 export default class Music3D extends Vue{
+
+    @State("musicModule") musicModule:any
+    @Mutation('set_musicCurrentTime') set_musicCurrentTime: any
+    @Mutation('set_musicMaxTime') set_musicMaxTime: any
 
     @Prop() TriangleColors:any
     @Prop() barColors:any
@@ -89,10 +94,20 @@ export default class Music3D extends Vue{
 
     }
 
+    // 设置播放进度
+    setPlayCurrentTime(val:number){
+        if (this.audio) {
+            console.log(this.audio)
+            console.log(this.audio.context)
+            // this.audio.context.setContext({currentTime:val})
+        }
+    }
+
     // 播放/暂停
     handleAudioPlay(flag:boolean){
         if (this.audio) {
-            flag ? this.audio.play() : this.audio.stop()
+            console.log(this.audio.context)
+            flag ? this.audio.context.resume() : this.audio.context.suspend()
         }
     }
 
@@ -164,7 +179,12 @@ export default class Music3D extends Vue{
     animate(){
         this.stats && this.stats.update()
         this.controls.update()
+        const Delta = this.threeClock.getDelta()
         if (this.analyser) {
+            const currentTime = this.audio.context.currentTime
+            if (Math.floor(currentTime) !== this.musicModule.musicCurrentTime) {
+                this.set_musicCurrentTime(Math.floor(currentTime))
+            }
             const arr:Array<any> = this.analyser.getFrequencyData()
             if (this.audioBarGroup) {
                 this.audioBarGroup.rotation.z += 0.002
@@ -183,17 +203,17 @@ export default class Music3D extends Vue{
                     }
                 })
             }
-            const Delta = this.threeClock.getDelta()
+            
             this.barNodes.forEach((node:any, index:number, array:Array<any>) => {
                 node.strength(arr[index % array.length] * 0.1)
                 node.transition(Delta)
             })
             this.scale = 1 + arr[Math.ceil(arr.length * 0.05)] / 500
             this.updateCircle(arr)
-            this.triangleArr.map((item:any) => {
-                item.transition(Delta)
-            })
         }
+        this.triangleArr.map((item:any) => {
+            item.transition(Delta)
+        })
         this.webGLRenderer.render(this.Scene, this.camera)
         requestAnimationFrame(this.animate)
     }
@@ -277,6 +297,7 @@ export default class Music3D extends Vue{
         this.linstener = new THREE.AudioListener()
         this.camera.add(this.linstener)
         this.audio = new THREE.Audio(this.linstener)
+        this.audio.context.suspend()        // 暂停音频播放
         this.audioLoader = new THREE.AudioLoader()
         this.audioLoader.load(m79621, (AudioBuffer: any) => {
             if (this.audio.isPlaying) {
@@ -284,9 +305,10 @@ export default class Music3D extends Vue{
                 this.audio.setBuffer()
             }
             this.audio.setBuffer(AudioBuffer)   // 音频缓冲区对象关联到音频对象audio
-            this.audio.setLoop(false)           //是否循环
-            this.audio.setVolume(1)             //音量
-            this.audio.play()                   //播放
+            this.audio.setLoop(false)           // 是否循环
+            this.audio.setVolume(1)             // 音量
+            this.audio.play()                   // 播放
+            this.set_musicMaxTime(Math.floor(this.audio.buffer.duration))
             // 音频分析器和音频绑定，可以实时采集音频时域数据进行快速傅里叶变换
             this.analyser = new THREE.AudioAnalyser(this.audio, 512)
         })
