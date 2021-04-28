@@ -1,10 +1,9 @@
 <template>
-    <van-tabbar v-model="footerModule.activeIndex">
-      <van-tabbar-item icon="wap-home-o" to="/home/main">首页</van-tabbar-item>
-      <van-tabbar-item icon="apps-o" to="/home/resource">资源</van-tabbar-item>
-      <!-- <van-tabbar-item icon="chart-trending-o" to="/home/grid">网格</van-tabbar-item> -->
-      <van-tabbar-item icon="service-o" to="/home/music">音乐</van-tabbar-item>
-      <van-tabbar-item icon="user-circle-o" to="/home/my?id=1">我的</van-tabbar-item>
+    <van-tabbar v-model="footerModule.activeIndex" @change="onChange">
+      <van-tabbar-item icon="wap-home-o">首页</van-tabbar-item>
+      <van-tabbar-item icon="apps-o">地图</van-tabbar-item>
+      <van-tabbar-item icon="service-o">音乐</van-tabbar-item>
+      <van-tabbar-item icon="user-circle-o">我的</van-tabbar-item>
     </van-tabbar>
 </template>
 
@@ -17,13 +16,13 @@ export default class FooterComponent extends Vue {
 
   onChange(index:any){
     if (index == 0) {
-      this.$router.push('/home/main')
+      this.$router.replace('/home/main')
     }else if (index == 1) {
-      this.$router.push('/home/resource')
+      this.$router.replace('/home/resource')
     }else if (index == 2) {
-      this.$router.push('/home/music')
+      this.$router.replace('/home/music')
     }else if (index == 3) {
-      this.$router.push('/home/my')
+      this.$router.replace('/home/my?')
     }
   }
 }

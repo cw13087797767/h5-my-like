@@ -82,3 +82,18 @@ export const range = (start:number, end:number, step = 1, fromRight = false) => 
     }
     return result;
 }
+
+/**
+ * 查图标
+ * @param key 
+ */
+export const getIconByKey = (key:string) => {
+    switch (key) {
+        case 'camera':
+            return require("@/assets/icon/camera.png")
+        case 'space':
+            return require("@/assets/icon/space.png")
+        default:
+            break;
+    }
+}

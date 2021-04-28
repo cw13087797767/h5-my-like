@@ -18,11 +18,7 @@
 
 <script lang="ts">
 import { Vue,Component } from "vue-property-decorator";
-const icon1 = require('@/assets/icon/icon1.png')
-const icon2 = require('@/assets/icon/icon2.png')
-const icon3 = require('@/assets/icon/icon3.png')
-const uploadImg = require('@/assets/icon/uploadImg.png')
-const spaceImg = require('@/assets/icon/space.png')
+import { getIconByKey } from '@/util/util'
 @Component
 export default class HomeMainMiddleComponent extends Vue {
     private workList:Array<any> = []
@@ -30,13 +26,13 @@ export default class HomeMainMiddleComponent extends Vue {
     created() {
         this.workList = [
             {
-                img:spaceImg,
+                img:getIconByKey('space'),
                 label:'我的空间',
                 routeName:'baseAppSpaceMySpace'
             },
             {
-                img:uploadImg,
-                label:'图片上传',
+                img:getIconByKey('camera'),
+                label:'图片上传测试',
                 routeName:'baseAppUploadImg'
             },
         ]
