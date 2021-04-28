@@ -4,9 +4,9 @@
             class="nav-title"
             title="音乐"
         >
-            <!-- <template #right>
-                <van-icon name="setting-o" color="#fff" @click="handleShowConfig()"/>
-            </template> -->
+            <template #right>
+                <van-icon name="setting-o" color="#fff" size="20" @click="onchangeShowConfig()"/>
+            </template>
         </van-nav-bar>
         <div class="home-body">
             <!-- 配置功能 -->
@@ -37,24 +37,28 @@
                                     <van-radio name="3"><span style="color:#fff">魔幻世界</span></van-radio>
                                 </van-radio-group>
                             </p> -->
-                            <p style="color:#fff;padding-top:5px">
+                            <p class="tab-select-p">
                                 <span>视角旋转：</span>
                                 <van-checkbox v-model="autoRotate" shape="square"><span style="color:#fff">自动旋转</span></van-checkbox>
+                            </p>
+                            <p class="tab-select-p">
+                                <span>离开页面后音乐是否继续播放：</span>
+                                <van-checkbox v-model="playWhenLeave" shape="square"><span style="color:#fff">继续播放</span></van-checkbox>
                             </p>
                         </div>
                     </van-tab>
                 </van-tabs>
-                <div class="close" @click="showConfig=false">
+                <!-- <div class="close" @click="showConfig=false">
                     <van-icon name="arrow-up" color="#fff" size="30"/>
-                </div>
+                </div> -->
             </div>
-            <div 
+            <!-- <div 
                 class="show-config" 
                 :style="`top:${showConfig ? '-160px' : '0px'}`"
                 @click="showConfig=true"
             >
                 <van-icon name="arrow-down" color="#fff" size="30"/>
-            </div>
+            </div> -->
             <!-- 播放控制 -->
             <div class="play-ctrl" :style="`bottom:${showPlayDetail ? '0' : '-160px'};opacity:${showPlayDetail ? '1' :'0'}`">
                 <div class="play-top">
@@ -84,8 +88,8 @@
                     <div class="play-bottom-center">
                         <img src="../../../assets/icon/last.png" alt="" srcset="">
                         <div>
-                            <img v-if="playStatus" @click="onchangePlay()" src="../../../assets/icon/stop.png" alt="" srcset="">
-                            <img v-else @click="onchangePlay()" src="../../../assets/icon/play.png" alt="" srcset="">
+                            <img v-if="playStatus" @click="onchangePlay(false)" src="../../../assets/icon/stop.png" alt="" srcset="">
+                            <img v-else @click="onchangePlay(true)" src="../../../assets/icon/play.png" alt="" srcset="">
                         </div>
                         <img src="../../../assets/icon/next.png" alt="" srcset="">
                     </div>
@@ -97,6 +101,34 @@
             </div>
             <div class="play-show" @click="onchangeshowPlayDetail()" :style="`bottom:${showPlayDetail ? '-160px' : '0'};opacity:${showPlayDetail ? '0' :'1'}`">
                 <van-icon name="arrow-up" color="#fff" size="30"/>
+            </div>
+            <!-- 搜索列表 -->
+            <div class="search-ctn" :style="`top:${showSearch ? '0' : '-100%'}`">
+                <div class="search-body">
+                    <input type="text" name="" id="" placeholder="搜点啥">
+                    <div class="search-delete">
+                        <van-icon name="cross" color="#fff" size="20"/>
+                    </div>
+                </div>
+                <div class="search-list">
+                    <ul v-if="musicList && musicList.legnth > 0">
+                        <li v-for="(item, index) in musicList" :key="index">
+                            <div class="list-num">{{ index + 1 }}</div>
+                            <div class="list-detail">
+                                <p>富士山下</p>
+                                <p>陈奕迅</p>
+                            </div>
+                            <div class="list-ctrl">
+                                <van-icon name="play-circle-o" color="#fff" size="20"  style="padding:5px"/>
+                                <van-icon name="plus" color="#fff" size="20" style="margin:0 10px;padding:5px"/>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="search-mask" @click="onchangeShowSearch(false)"></div>
+            </div>
+            <div class="show-search" v-if="!showConfig" :style="`top:${showSearch ? '-100%' : '0'}`" @click="onchangeShowSearch(true)">
+                <van-icon name="search" color="#fff" size="20"/>
             </div>
             <Music3D 
                 ref="music3D"
@@ -139,11 +171,13 @@ export default class MusicComponent extends Vue{
     private activeType:string = '0'
     private colorTimer:any = null
     private autoRotate:boolean = true
+    private playWhenLeave:boolean = true
     private bgImgRadio:string = '1'
     private playType:string = '0'
     private playStatus:boolean = false
     private showPlayDetail:boolean = false
-
+    private musicList:Array<any> = []
+    private showSearch:boolean = false
 
     mounted() {
         const musicColorConfig = window.localStorage.getItem('musicColorConfig')
@@ -163,15 +197,32 @@ export default class MusicComponent extends Vue{
         
     }
 
+    deactivated() {
+        if (!this.playWhenLeave) {
+            this.onchangePlay(false)
+        }
+    }
+
+    onchangeShowConfig(){
+        this.showConfig = !this.showConfig
+        if (this.showConfig) {
+            this.onchangeShowSearch(false)
+        }
+    }
+
+    onchangeShowSearch(type:boolean){
+        this.showSearch = type
+    }
+
     formatPlayTime(val:number){
         const mins = Math.floor(val / 60)
         const seconds = val - mins * 60
         return `${mins < 10 ? '0' + mins : mins}:${seconds < 10 ? '0' + seconds : seconds}`
     }
 
-    onchangePlay(){
-        this.playStatus = !this.playStatus
-        this.$refs.music3D && (this.$refs.music3D as Music3D).handleAudioPlay(this.playStatus)
+    onchangePlay(type:boolean){
+        this.playStatus = type
+        this.$refs.music3D && (this.$refs.music3D as Music3D).handleAudioPlay(type)
     }
 
     onchangeshowPlayDetail(){
@@ -244,8 +295,9 @@ export default class MusicComponent extends Vue{
         .config-ctn{
             transition: all ease 0.3s;
             overflow: hidden;
-            width: 100%;
-            height: 150px;
+            width: 100%;    
+            // height: 150px;
+            
             position: absolute;
             z-index: 3;
             top: 0;
@@ -273,11 +325,18 @@ export default class MusicComponent extends Vue{
     .tab-ctn{
         width: 100%;
         padding: 10px 10% 0;
+        .tab-select-p{
+            color:#fff;
+            padding-top:5px;
+            display: flex;
+            align-items: center;
+        }
     }
     .vc-slider{
         width: 100%;
     }
     .music-tabs{
+        padding-bottom: 15px;
         /deep/.van-tabs__nav{
             background-color: transparent;
         }
@@ -325,7 +384,7 @@ export default class MusicComponent extends Vue{
             }
         }
         .play-bottom{
-            height: 50px;
+            height: 40px;
             width: 100%;
             display: flex;
             align-items: center;
@@ -371,6 +430,96 @@ export default class MusicComponent extends Vue{
         transform: translate(-50%, 0);
         z-index: 2;
         padding: 10px 10px 0;
+        transition: all ease 0.3s;
+    }
+    .search-ctn{
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        transition: all ease 0.3s;
+        .search-body{
+            height: 45px;
+            background-color: rgba(255,255,255,0.3);
+            position: relative;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            input{
+                height: 30px;
+                padding: 0px 15px;
+                width: 100%;
+                box-sizing: border-box;
+                background: transparent;
+                border: solid 1px #bfbbbb;
+                border-radius: 30px;
+                color: #fff;
+                font-size: 16px;
+            }
+            input::-webkit-input-placeholder {
+                color: rgb(211, 211, 211);
+            }
+            input::-moz-input-placeholder {
+                color: rgb(211, 211, 211);
+            }
+            input::-ms-input-placeholder {
+                color: rgb(211, 211, 211);
+            }
+            .search-delete{
+                position: absolute;
+                right: 25px;
+                top: 50%;
+                transform: translate(0, -50%);
+                padding: 5px;
+            }
+        }
+        .search-list{
+            max-height: 50vh;
+            background: rgba(255,255,255,0.3);
+            overflow: auto;
+            ul{
+                padding-top: 15px;
+                height: 100%;
+                li{
+                    display: flex;
+                    height: 45px;
+                    color: #fff;
+                    align-items: center;
+                    border-bottom: solid 1px #5d5d5d;
+                    .list-num{
+                        width: 35px;
+                        text-align: center;
+                    }
+                    .list-detail{
+                        flex: 1;
+                        padding: 0 15px;
+                        &>:nth-child(2){
+                            font-size: 12px;
+                            color: #c3c3c3;
+                        }
+                    }
+                }
+            }
+        }
+        .search-mask{
+            flex: 1;
+            width: 100%;
+        }
+    }
+    .show-search{
+        position: absolute;
+        top: -100%;
+        left: 50%;
+        -webkit-transform: translate(-50%, 0);
+        transform: translate(-50%, 0);
+        padding: 10px;
+        z-index: 2;
         transition: all ease 0.3s;
     }
 </style>
