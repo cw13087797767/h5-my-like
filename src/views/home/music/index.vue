@@ -62,7 +62,7 @@
                         <span>富士山下</span>
                         <span>&nbsp;—&nbsp;陈奕迅</span>
                     </p>
-                    <div class="play-progress">
+                    <!-- <div class="play-progress">
                         <p class="label">{{ formatPlayTime(musicModule.musicCurrentTime) }}</p>
                         <van-slider 
                             v-model="musicModule.musicCurrentTime" 
@@ -73,7 +73,7 @@
                             inactive-color="rgba(255,255,255,0.3)"
                         />
                         <p class="label">{{ formatPlayTime(musicModule.musicMaxTime) }}</p>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="play-bottom">
                     <div class="img-plea">
@@ -293,7 +293,6 @@ export default class MusicComponent extends Vue{
         }
     }
     .play-ctrl{
-        height: 110px;
         width: 100%;
         position: absolute;
         bottom: 0;
@@ -302,9 +301,9 @@ export default class MusicComponent extends Vue{
         transition: all ease 0.3s;
         // overflow: hidden;
         z-index: 2;
-        padding: 0 15px;
+        padding: 0 15px 10px;
         .play-top{
-            height: 50px;
+            // height: 50px;
             width: 100%;
             .play-msg{
                 line-height: 30px;

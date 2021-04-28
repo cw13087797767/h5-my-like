@@ -96,17 +96,19 @@ export default class Music3D extends Vue{
 
     // 设置播放进度
     setPlayCurrentTime(val:number){
-        if (this.audio) {
-            console.log(this.audio)
-            console.log(this.audio.context)
-            // this.audio.context.setContext({currentTime:val})
-        }
+        // if (this.audio) {
+        //     console.log(this.audio)
+        //     this.audio.pause()
+        //     this.audio.context.suspend()
+        //     this.audio.play(+val)
+        //     this.audio.context.resume()
+        // }
     }
 
     // 播放/暂停
     handleAudioPlay(flag:boolean){
         if (this.audio) {
-            console.log(this.audio.context)
+            // flag ? this.audio.play() : this.audio.pause()
             flag ? this.audio.context.resume() : this.audio.context.suspend()
         }
     }
@@ -181,10 +183,11 @@ export default class Music3D extends Vue{
         this.controls.update()
         const Delta = this.threeClock.getDelta()
         if (this.analyser) {
-            const currentTime = this.audio.context.currentTime
-            if (Math.floor(currentTime) !== this.musicModule.musicCurrentTime) {
-                this.set_musicCurrentTime(Math.floor(currentTime))
-            }
+            // console.log(this.audio._progress, this.audio._startedAt)
+            // const currentTime = this.audio.context.currentTime
+            // if (Math.floor(currentTime) !== this.musicModule.musicCurrentTime) {
+            //     this.set_musicCurrentTime(Math.floor(currentTime))
+            // }
             const arr:Array<any> = this.analyser.getFrequencyData()
             if (this.audioBarGroup) {
                 this.audioBarGroup.rotation.z += 0.002
@@ -300,6 +303,7 @@ export default class Music3D extends Vue{
         this.audio.context.suspend()        // 暂停音频播放
         this.audioLoader = new THREE.AudioLoader()
         this.audioLoader.load(m79621, (AudioBuffer: any) => {
+            window.AudioBuffer = AudioBuffer
             if (this.audio.isPlaying) {
                 this.audio.stop()
                 this.audio.setBuffer()
