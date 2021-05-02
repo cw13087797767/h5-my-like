@@ -1,5 +1,15 @@
 ## vue2 移动端项目
 
+
+## 后台服务项目地址
+```
+https://github.com/cw13087797767/h5-my-like-server
+```
+## 涉及到网易云音乐接口，请移步
+```
+https://neteasecloudmusicapi.vercel.app/#/
+```
+
 ## Project setup
 ```
 npm install
