@@ -5,7 +5,7 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch, Emit } from 'vue-property-decorator'
 import { State, Mutation } from 'vuex-class'
 import * as THREE from 'three'
 const OrbitControls = require("three-orbitcontrols")
@@ -27,6 +27,11 @@ export default class Music3D extends Vue{
     @Prop() barColors:any
     @Prop() linesColors:any
     @Prop() autoRotate:any
+
+    @Emit('handlePlayEnd')
+    handlePlayEnd(){
+        // todo
+    }
 
     @Watch('linesColors')
     watchLinesColors(newval:any, oldval:any){
@@ -108,8 +113,8 @@ export default class Music3D extends Vue{
     // 播放/暂停
     handleAudioPlay(flag:boolean){
         if (this.audio) {
-            // flag ? this.audio.play() : this.audio.pause()
-            flag ? this.audio.context.resume() : this.audio.context.suspend()
+            flag ? this.audio.play() : this.audio.pause()
+            // flag ? this.audio.context.resume() : this.audio.context.suspend()
         }
     }
 
@@ -167,6 +172,11 @@ export default class Music3D extends Vue{
         // 随机三角形分组
         this.addTriangleGroup()
 
+        // 初始化音频监听
+        this.linstener = new THREE.AudioListener()
+        this.camera.add(this.linstener)
+        this.audio = new THREE.Audio(this.linstener)
+        this.audio.onEnded = this.playOnEnded
         // 加载音频监听器
         this.addListener()
 
@@ -175,6 +185,18 @@ export default class Music3D extends Vue{
 
         // 定时动态渲染
         this.animate()
+    }
+
+    // 歌曲播放结束事件
+    playOnEnded(){
+        console.log('播放结束')
+        this.handlePlayEnd()
+    }
+
+    changeLoop(flag:boolean){
+        if (this.audio) {
+            this.audio.setLoop(flag)
+        }
     }
 
     // 动态渲染
@@ -296,25 +318,25 @@ export default class Music3D extends Vue{
     }
 
     // 添加监听
-    addListener(){
-        this.linstener = new THREE.AudioListener()
-        this.camera.add(this.linstener)
-        this.audio = new THREE.Audio(this.linstener)
-        this.audio.context.suspend()        // 暂停音频播放
-        this.audioLoader = new THREE.AudioLoader()
-        this.audioLoader.load(m79621, (AudioBuffer: any) => {
-            window.AudioBuffer = AudioBuffer
-            if (this.audio.isPlaying) {
+    addListener(url?:any, cb?:any){
+        if (this.audio.isPlaying) {
                 this.audio.stop()
                 this.audio.setBuffer()
             }
+        // this.audio.context.suspend()        // 暂停音频播放
+        url && new THREE.AudioLoader().load(url, (AudioBuffer: any) => {
             this.audio.setBuffer(AudioBuffer)   // 音频缓冲区对象关联到音频对象audio
             this.audio.setLoop(false)           // 是否循环
             this.audio.setVolume(1)             // 音量
             this.audio.play()                   // 播放
-            this.set_musicMaxTime(Math.floor(this.audio.buffer.duration))
+            // this.set_musicMaxTime(Math.floor(this.audio.buffer.duration))
+            // this.audio.onended = () => {
+            //     console.log(123)
+            // }
+            console.log(this.audio)
             // 音频分析器和音频绑定，可以实时采集音频时域数据进行快速傅里叶变换
             this.analyser = new THREE.AudioAnalyser(this.audio, 512)
+            cb && cb()
         })
     }
 
